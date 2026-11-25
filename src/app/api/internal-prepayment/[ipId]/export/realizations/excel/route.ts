@@ -5,6 +5,7 @@ import {
   toIPRealizationLedgerEntry,
 } from "@/lib/ip-realization-export";
 import { verifyIPRecordOwnerOrAdmin } from "@/lib/report-auth";
+import { createExportFilename } from "@/lib/export-filename";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
@@ -13,10 +14,6 @@ export const dynamic = "force-dynamic";
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const moneyFormat = '"Rp" #,##0.00;[Red]-"Rp" #,##0.00';
 const borderColor = "CBD5E1";
-
-function safeFilename(value: string) {
-  return value.replace(/[^a-zA-Z0-9_-]/g, "-");
-}
 
 function dateValue(value: string) {
   return new Date(`${value.slice(0, 10)}T00:00:00.000Z`);
@@ -226,10 +223,16 @@ export async function GET(
     sheet.views = [{ state: "frozen", ySplit: headerRow }];
 
     const bytes = await workbook.xlsx.writeBuffer();
+    const filename = createExportFilename(
+      "PTJB PUM",
+      data.record.title,
+      data.record.disbursement_date,
+      "xlsx",
+    );
     return new Response(new Uint8Array(bytes), {
       headers: {
         "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        "Content-Disposition": `attachment; filename="Realisasi-${safeFilename(data.record.reference_code ?? "IP")}.xlsx"`,
+        "Content-Disposition": filename.contentDisposition,
         "Cache-Control": "private, no-store",
       },
     });

@@ -12,6 +12,7 @@ import {
   type IPRealizationExportData,
 } from "@/lib/ip-realization-export";
 import { verifyIPRecordOwnerOrAdmin } from "@/lib/report-auth";
+import { createExportFilename } from "@/lib/export-filename";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
@@ -542,13 +543,18 @@ export async function GET(
     if (!data) return NextResponse.json({ error: "Pengajuan IP tidak ditemukan." }, { status: 404 });
 
     const bytes = await buildReport(supabase, data);
-    const filenameRef = (data.record.reference_code ?? "IP").replace(/[^a-zA-Z0-9_-]/g, "-");
+    const filename = createExportFilename(
+      "PTJB PUM",
+      data.record.title,
+      data.record.disbursement_date,
+      "pdf",
+    );
     const body = new ArrayBuffer(bytes.byteLength);
     new Uint8Array(body).set(bytes);
     return new Response(body, {
       headers: {
         "Content-Type": "application/pdf",
-        "Content-Disposition": `attachment; filename="Realisasi-${filenameRef}.pdf"`,
+        "Content-Disposition": filename.contentDisposition,
         "Cache-Control": "private, no-store",
       },
     });

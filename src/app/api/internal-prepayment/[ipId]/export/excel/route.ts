@@ -2,6 +2,7 @@ import ExcelJS from "exceljs";
 import { NextResponse } from "next/server";
 import { getIPApplicationExportData } from "@/lib/ip-application-export";
 import { verifyIPRecordOwnerOrAdmin } from "@/lib/report-auth";
+import { createExportFilename } from "@/lib/export-filename";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
@@ -219,12 +220,12 @@ export async function GET(
       }
     }
     sheet.views = [{ state: "frozen", ySplit: headerRow }];
-    const filenameRef = (data.record.reference_code ?? "IP").replace(/[^a-zA-Z0-9_-]/g, "-");
+    const filename = createExportFilename("PUM", data.record.title, data.record.requested_on, "xlsx");
     const bytes = await workbook.xlsx.writeBuffer();
     return new Response(new Uint8Array(bytes), {
       headers: {
         "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        "Content-Disposition": `attachment; filename="Form-Pengajuan-${filenameRef}.xlsx"`,
+        "Content-Disposition": filename.contentDisposition,
         "Cache-Control": "private, no-store",
       },
     });

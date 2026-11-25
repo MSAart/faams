@@ -2,6 +2,7 @@ import { PDFDocument, StandardFonts, rgb, type PDFPage } from "pdf-lib";
 import { NextResponse } from "next/server";
 import { getIRDetailExportData, type IRExportEvidence } from "@/lib/ir-detail-export";
 import { verifyIRRecordOwnerOrAdmin } from "@/lib/report-auth";
+import { createExportFilename } from "@/lib/export-filename";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
@@ -514,11 +515,11 @@ export async function GET(
     if (!data) return NextResponse.json({ error: "IR tidak ditemukan." }, { status: 404 });
 
     const bytes = await buildPdf(data, irType);
-    const filenameRef = (data.record.reference_code ?? "IR").replace(/[^a-zA-Z0-9_-]/g, "-");
+    const filename = createExportFilename("IR", data.record.title, data.record.submitted_on, "pdf");
     return new Response(new Uint8Array(bytes), {
       headers: {
         "Content-Type": "application/pdf",
-        "Content-Disposition": `attachment; filename="Rincian-${filenameRef}.pdf"`,
+        "Content-Disposition": filename.contentDisposition,
         "Cache-Control": "private, no-store",
       },
     });

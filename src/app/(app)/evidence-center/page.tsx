@@ -58,11 +58,11 @@ function buildParents(
   return [
     ...ips.map((ip) => ({
       value: `ip|${ip.id}`,
-      label: `IP · ${ip.reference_code ?? "Nomor belum diisi"} · ${ip.title}`,
+      label: `IP · ${ip.reference_code ?? "No.IP Belum Diinput"} · ${ip.title}`,
     })),
     ...irs.map((ir) => ({
       value: `ir|${ir.id}`,
-      label: `IR / PTJB · ${ir.reference_code ?? "Nomor belum diisi"} · ${ir.title}`,
+      label: `IR / PTJB · ${ir.reference_code ?? "No.IR Belum Diinput"} · ${ir.title}`,
     })),
     ...expenses.map((expense) => ({
       value: `expense|${expense.id}`,

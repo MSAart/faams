@@ -2,6 +2,7 @@ import { PDFDocument, StandardFonts, rgb, type PDFPage } from "pdf-lib";
 import { NextResponse } from "next/server";
 import { getIPApplicationExportData, type ExportImage, type IPApplicationExportData } from "@/lib/ip-application-export";
 import { verifyIPRecordOwnerOrAdmin } from "@/lib/report-auth";
+import { createExportFilename } from "@/lib/export-filename";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
@@ -313,13 +314,13 @@ export async function GET(
     const data = await getIPApplicationExportData(supabase, ipId);
     if (!data) return NextResponse.json({ error: "Pengajuan IP tidak ditemukan." }, { status: 404 });
     const bytes = await buildForm(data);
-    const filenameRef = (data.record.reference_code ?? "IP").replace(/[^a-zA-Z0-9_-]/g, "-");
+    const filename = createExportFilename("PUM", data.record.title, data.record.requested_on, "pdf");
     const body = new ArrayBuffer(bytes.byteLength);
     new Uint8Array(body).set(bytes);
     return new Response(body, {
       headers: {
         "Content-Type": "application/pdf",
-        "Content-Disposition": `attachment; filename="Form-Pengajuan-${filenameRef}.pdf"`,
+        "Content-Disposition": filename.contentDisposition,
         "Cache-Control": "private, no-store",
       },
     });

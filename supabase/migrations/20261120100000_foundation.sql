@@ -19,7 +19,7 @@ create table if not exists public.system_settings (
 
 create or replace function public.is_admin()
 returns boolean
-language sql
+language sql  
 stable
 security definer
 set search_path = ''
